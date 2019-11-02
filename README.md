@@ -31,7 +31,7 @@ When using a fakeplayer to store data, either temporarily or permanently, the fa
 
 The format of a fakeplayer follows this pattern: `$<namespace>.<name>` where:
 - `$` is used to ensure the name is an invalid real player name while still being a valid fakeplayer name.  
-`#` is not used because it hides the fakeplayer from the sidebar, which is undesirable for debugging purposes
+`$` is the preferred prefix, however if a fakeplayer value changes frequently it may be desirable to hide it from the sidebar. In this case, `#` may be used instead of `$`
 - `<namespace>` is the namespace. This will typically be the same as the namespace being used by the datapack
 - `.` is just a separator between the segments of the name
 - `.<name>` is a `.` separate name of the fakeplayer.  
