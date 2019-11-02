@@ -58,7 +58,8 @@ This includes **any** changes to existing datapack elements apart from functions
 - `$phi.<module>.version.minor`: Minor version number, incremented when new features are added, reset when the major version is incremented.  
 Adding any new (public/documented) datapack elements counts as adding a new feature.
 - `$phi.<module>.version.patch`: Patch version number, incremented when bug fixes are applied, reset when the minor or major version is incremented.  
-Unfortunately, this is only possible for functions, by using function tags and version score checks
+Unfortunately, this is only usable for functions, by using function tags and version score checks
+- `$phi.<module>.version.minorpatch` = `$phi.<module>.version.minor * 1000 + $phi.<module>.version.patch`
 
 Note that the version numbers are incremented assuming that packs do not depend on internal/undocumented features.
 
@@ -83,23 +84,23 @@ To prevent conflicts between versions, function paths should be made such that t
 ```
 <namespace>:<major>/<minor>/<patch>/<name>
 ```
-There should also be a function tag the follows the following pattern: `#<namepace>:<major>/<minor>/<name>`  
-This tag should call the function for the latest patch as of the time of writing the tag. Previous patch versions would add previous versions of the function.  
-This tag should also be added to the the tag for the previous minor version
+There should also be a function tag that follows the following pattern: `#<namepace>:<major>/<name>`  
+This tag should call the function for the latest minor verions and patch as of the time of writing the tag. Previous minor and patch versions would add previous versions of the function.  
 
-Overall this means that all loaded versions of the function that are compatible with the specified version will run, so the function should check that the version is the exact version so that only the latest will do anything.
+This means that all loaded versions of the function within the major version would run, so the functions must check the `minorpatch` version is the exact version of this function so that only the latest version will actually do anything.  
+`major` does not need to be checked, as any packs that would call a different major version must disable themselves. If a pack calls the wrong major version then they are not following the standard, and we do not give any guarantees for such packs.
 
-The point of having tags at the minor version level is to reduce the number of functions that need to run, since `#<namepace>:<major>/<minor>/<name>` will only contain that version and later versions.
+Originally there were plans to have tags at the minor version level instead of major to reduce the number of functions that need to run, however this was determined to become too verbose in the number of function tags created in each minor version.
 
 #### Example
 A function called `func` for version 2.3.4 of a pack called `pack` would have the following:
 
 `datapacks/pack/data/pack/functions/2/3/4/func.mcfunction`:
 ```
-execute if score $pack.version.major matches 2 if score $pack.version.minor matches 3 if score $pack.version.patch matches 4 run ...
+execute if score $pack.version.minorpatch matches 3004 run ...
 ```
 
-`datapacks/pack/data/pack/tags/functions/2/3/func.json`:
+`datapacks/pack/data/pack/tags/functions/2/func.json`:
 ```json
 {
     "replace": false,
@@ -108,19 +109,6 @@ execute if score $pack.version.major matches 2 if score $pack.version.minor matc
     ]
 }
 ```
-
-`datapacks/pack/data/pack/tags/functions/2/2/func.json`:
-```json
-{
-    "replace": false,
-    "values": [
-        "#pack:2/3/func"
-    ]
-}
-```
-
-Now any of the following will result in the same function being called: `pack:2/3/4/func`, `#pack:2/3/func`, `#pack:2/2/func`.  
-If a later version is also loaded the tags will cause the later version to be called, and if an earlier version is also loaded the older tags will get the newer tags added to them, resulting in the newer version running even when the older tags are run.
 
 ## Phi version 0
 Phi version 0 was written before Lantern Load was conceived, and as such does not follow the versioning standards. Version 0 is deprecated, and new features will not be added to it, however critical bug fixes will be back-ported if applicable. There is also no way to check how recent the loaded version of Phi version 0 actually is
