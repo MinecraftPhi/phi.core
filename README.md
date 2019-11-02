@@ -9,7 +9,6 @@ The core module of Phi.
 - phiversion
     - Stores version numbers
     - Completely cleared on load then written with version numbers of loaded modules
-    - Only needed during load
 - phitemp
     - Stores temporary data
     - There is no guarantee that values will be kept beyond the current function context
