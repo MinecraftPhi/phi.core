@@ -2,6 +2,7 @@
 This repository contains the core module for Phi, as well as defines the standards that Phi follows and that all Phi modules and packs that use Phi should follow.
 
 - [Versioning](docs/versioning.md)
+- [The Phi Module Packer and the Structure of Modules](docs/module_structure.md)
 
 # Objectives
 - phiglobal
