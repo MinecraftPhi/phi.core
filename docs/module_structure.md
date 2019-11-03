@@ -5,9 +5,6 @@ The Phi Module Packer is designed to help automate cross version compatibility a
 Modules follow this folder structure:
 ```
 ├── src
-│   ├── bundled
-│   │   ├── datapacks
-│   │   └── resourcepacks
 │   ├── datapack
 │   └── resourcepack
 ├── dist
