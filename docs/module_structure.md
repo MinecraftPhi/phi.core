@@ -30,13 +30,16 @@ This file defines the metadata for the module.
         "namespaced function/function tag id"
     ],
     "preprocessors": [
-        "pre-defined preprocessor id",
         {
-            "custom": false,
-            "id": "pre-defined preprocessor id",
+            "type": "verified",
+            "id": "namespaced preprocessor id",
+            "version": "semver",
             "params": {
                 // Preprocessor specific parameters
             },
+            "inputs": [
+                "glob"
+            ],
             "outputs": {
                 "output name": "folder name", // "output name" is variable
                 "output name": {
@@ -54,9 +57,19 @@ This file defines the metadata for the module.
             }
         },
         {
-            "custom": true,
+            "type": "nuget",
+            "id": "nuget id",
+            // ... same keys as a verified preprocessor
+        },
+        {
+            "type": "local",
+            "folder": "file location",
+            // ... same keys as a verified preprocessor, without version
+        },
+        {
+            "type": "custom",
             "name": "human readable name",
-            "url": "link to custom preprocessor"
+            "url": "url to preprocessor" // URL can point anywhere
         }
     ],
     "dependencies": [
@@ -94,9 +107,19 @@ This file defines the metadata for the module.
 ## Pre-Processing
 The `"preprocessors"` list defines what preprocessors need to be run on the `src` folder before the resource/data pack can be run by minecraft.
 
-Currently there are no pre-defined preprocessors, however there are plans for a Phi transpiler and custom language. Pre-defined preprocessors will be able to be run automatically by the Phi module packer.
-
-Custom pre-processors can't be run by the Phi module packer, but are still included in the metadata to indicate that the user needs to run it manually, and to prevent the packer from creating an invalid module distribution.
+There are 4 different types of pre-proccessors:
+- `"type": "verified"`  
+  A verified pre-processor has been manually verified, through source code analysis, to be safe to run. These types of pre-processors are stored on the Phi website and can be run automatically from the website or locally.  
+  If a module uses only verified pre-processors it will be possible to download the module in a completely functional vanilla format from the website.
+- `"type": "nuget"`  
+  A nuget pre-processor is the same as a verified pre-processor, except has not yet been validated to be safe, and is stored on NuGet instead of the Phi website.  
+  These pre-processors can still be run automatically by the Phi module packer on a local machine, but cannot be run on the Phi website for security reasons. Use with caution.
+- `"type": "local"`  
+  A local pre-processor is just like a verified or nuget pre-processor, but is stored locally on the machine rather than downloaded remotely.  
+  This is designed for use during the development of a new pre-processor, and is not expected to be used in a release of any module.
+- `"type": "custom"`  
+  A custom pre-processor cannot be run by the Phi module packer and must be run manually by the user.  
+  This exists for compatibility with existing tools that do not yet have a pre-processor available. If a module requires a custom pre-processor it will be shown on the website using the given name and will direct people to the specified URL. The URL can point anywhere, however it is recommended to point to the documenation of how to install and run the pre-processor
 
 The preprocessors are run in order from top the bottom, and the outputs are put into folders inside the `dist` folder named according to `"outputs"`  
 If `"outputs"` is not defined the preprocessor defines the default output folder(s). When the `"preprocessors"` list is empty the output goes directly into the `dist` folder. Most preprocessors use this same default for a single output.
@@ -104,6 +127,8 @@ If `"outputs"` is not defined the preprocessor defines the default output folder
 If a preprocessor creates multiple outputs the nested `"preprocessors"` list is run on the associated output, and then any preprocessors after this preprocessor will run on each output individually, with the output being nested inside the output folder.
 
 An example preprocessor with multiple outputs would be one that outputs a version of the pack using only vanilla features, and a version that takes advantage of mod commands to improve performance or add new functionality.
+
+The `"inputs"` lists specifies a list of files that the pre-processor should process, formatted as a *nix file glob relative to the root of the output of the previous pre-processor. This list is optional and the default is pre-processor defined. Any files that the pre-processor doesn't take as input will be just directly copied to the output with no processing, prior to any other files being processed so that the output of the pre-processor can replace such files without its own output being corrupted.
 
 ## Dependencies
 The `"dependencies"` list specifies the required dependencies of the module.
