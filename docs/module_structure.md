@@ -22,13 +22,6 @@ This file defines the metadata for the module.
     "name": "human readable name",
     "description": "short description",
     "version": "semver",
-    "internalFolder": "folder name",
-    "load": [
-        "namespaced function/function tag id"
-    ],
-    "tick": [
-        "namespaced function/function tag id"
-    ],
     "preprocessors": [
         {
             "type": "verified",
@@ -145,8 +138,20 @@ The nested `"dependencies"` list in preprocessor outputs merges with the root li
 
 The `"optionalDependencies"` list follows almost the same format as `"dependencies"`, but the dependencies are not automatically bundled, and with the addition of a description that explains what happens if the dependency is also loaded.
 
-## Automatic Versioning and Dependency Management
+## Phi Pre-Processors
+### `phi:versioning` - Automatic Versioning and Dependency Management
+```json5
+"params": {
+    "internalFolder": "folder name",
+    "load": [
+        "namespaced function/function tag id"
+    ],
+    "tick": [
+        "namespaced function/function tag id"
+    ]
+}
+```
 The `"load"` and `"tick"` lists act as replacements for the load and tick function tags, with the added functionality of automatically performing the version checks and declarations before running the specified functions.
 
-Any datapack elements in folders that do not follow the folder structure for versioning they will be automatically converted to match the version number and perform the necessary checks.  
+Any datapack elements in folders that do not follow the folder structure for versioning will be automatically converted to match the version number and perform the necessary checks.  
 Files inside the folder specified by `"internalFolder"` will be considered not part of the public API and will still be moved to the versioned folders, but will not perform any version checks and will not generate the function tags.
