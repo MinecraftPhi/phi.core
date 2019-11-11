@@ -69,17 +69,20 @@ This file defines the metadata for the module.
         {
             "type": "module",
             "id": "module id",
-            "version": "semver"
+            "version": "semver",
+            "bundle": true
         },
         {
             "type": "datapack",
             "source": "", // "git" or "file"
-            "url": "url"
+            "url": "url",
+            "bundle": true
         },
         {
             "type": "resourcepack",
             "source": "", // "git" or "file"
-            "url": "url"
+            "url": "url",
+            "bundle": true
         },
         {
             "type": "mod",
@@ -91,7 +94,7 @@ This file defines the metadata for the module.
         {
             "type:":"", // Same as a normal dependency
             // ...
-            "description": "Description of what changes if this dependency is found"
+            "description": "Human readable description of what changes if this dependency is found"
         }
     ]
 }
@@ -134,6 +137,8 @@ There are multiple types of supported dependencies:
 - `"type": "mod"`  
   Specifies that the module depends on a mod to minecraft. For example, the module may depend on the additions to the command system made by Phi-Modded
 
+The `"bundle"` boolean key determines whether the dependency will be bundled together in the final output or not. Defaults to `true`. Not applicable to `mod` dependencies or optional dependencies.
+
 The nested `"dependencies"` list in preprocessor outputs merges with the root list. In the case of two of the same dependency existing, the latest of the two specified versions is used.
 
 The `"optionalDependencies"` list follows almost the same format as `"dependencies"`, but the dependencies are not automatically bundled, and with the addition of a description that explains what happens if the dependency is also loaded.
@@ -151,7 +156,10 @@ The `"optionalDependencies"` list follows almost the same format as `"dependenci
     ]
 }
 ```
-The `"load"` and `"tick"` lists act as replacements for the load and tick function tags, with the added functionality of automatically performing the version checks and declarations before running the specified functions.
+The `"load"` and `"tick"` lists act as replacements for the load and tick function tags, with the added functionality of automatically performing the version checks and declarations before running the specified functions.  
+For bundled dependencies only the major version of the dependency will be checked, as the loaded version is guaranteed to be at least at the required version but may be higher.  
+For dependencies that are not bundled, the full version check will be performed.  
+Optional dependencies do not perform any automatic version checks, as it is up to the pack to determine what to do when the dependency isn't loaded.
 
 Any datapack elements in folders that do not follow the folder structure for versioning will be automatically converted to match the version number and perform the necessary checks.  
 Files inside the folder specified by `"internalFolder"` will be considered not part of the public API and will still be moved to the versioned folders, but will not perform any version checks and will not generate the function tags.
