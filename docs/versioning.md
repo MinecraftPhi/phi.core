@@ -1,0 +1,68 @@
+# Versioning and Dependency Management
+Phi uses [Lantern Load](https://github.com/LanternMC/Load) for version handling and dependency management. Please read the documentation for Lantern Load before using Phi. (once it has been written)
+
+Version numbers in Phi follow [Semantic Versioning](https://semver.org/), and on load the latest version of each module that has been loaded will be stored in the `phiversion` objective on the following fakeplayers:
+- `$phi.<module>.version.major`: Major version number, incremented when breaking changes are made.  
+This includes **any** changes to existing datapack elements apart from functions
+- `$phi.<module>.version.minor`: Minor version number, incremented when new features are added, reset when the major version is incremented.  
+Adding any new (public/documented) datapack elements counts as adding a new feature.
+- `$phi.<module>.version.patch`: Patch version number, incremented when bug fixes are applied, reset when the minor or major version is incremented.  
+Unfortunately, this is only usable for functions, by using function tags and version score checks
+- `$phi.<module>.version.minorpatch` = `$phi.<module>.version.minor * 1000 + $phi.<module>.version.patch`
+
+Note that the version numbers are incremented assuming that packs do not depend on internal/undocumented features.
+
+Note: the following should be moved to Lantern Load documentation
+> Packs/modules should not put their tick functions in the `#minecraft:tick` tag, and should instead schedule their tick functions on load using `schedule` and to reschedule at the end of their tick functions.  
+This solves two problems:
+> - The vanilla `#minecraft:tick` tag runs **before** `#minecraft:load`, and as such the loading process will not be complete when the tick function runs for the first time after loading
+> - `#minecraft:tick` always runs all its functions every tick, with no way to disable a function apart from wrapping it in a function that checks a condition. This wastes performance when a tick function is not needed.
+>
+> Using `schedule` for tick functions is also useful for version handling. It is recommended that on load the scheduled tick function(s) should be cleared, and then the version numbers of all dependencies should be compared for compatibility with the loading pack, and only if the dependencies are compatible should the tick function(s) be scheduled.  
+This has the effect of disabling the pack when incompatible depenedencies are loaded, or if the dependencies are not loaded at all.
+>
+>Under normal circumstandces, as per Semantic versioning, a module is compatible if the `major` version is equal to the expected version, and the `minor` and `patch` versions are greater than or equal to the expected version.
+
+## Creating a pack with versioning
+When creating a pack it must follow the constraints described in the Lantern Load documentation.
+
+The pack must also ensure that the correct version numbers are assigned to the approriate fakeplayers. When loading, the version stored on the fakeplayers should be checked, and if the version of the pack is later than the version on the fakeplayers the version should be overwritten.
+
+### Functions
+To prevent conflicts between versions, function paths should be made such that the namespaced id follows this pattern:
+```
+<namespace>:<major>/<minor>/<patch>/<name>
+```
+There should also be a function tag that follows the following pattern: `#<namepace>:<major>/<name>`  
+This tag should call the function for the latest minor verions and patch as of the time of writing the tag. Previous minor and patch versions would add previous versions of the function.  
+
+This means that all loaded versions of the function within the major version would run, so the functions must check the `minorpatch` version is the exact version of this function so that only the latest version will actually do anything.  
+`major` does not need to be checked, as any packs that would call a different major version must disable themselves. If a pack calls the wrong major version then they are not following the standard, and we do not give any guarantees for such packs.
+
+Originally there were plans to have tags at the minor version level instead of major to reduce the number of functions that need to run, however this was determined to become too verbose in the number of function tags created in each minor version.
+
+#### Example
+A function called `func` for version 2.3.4 of a pack called `pack` would have the following:
+
+`datapacks/pack/data/pack/functions/2/3/4/func.mcfunction`:
+```
+execute if score $pack.version.minorpatch matches 3004 run ...
+```
+
+`datapacks/pack/data/pack/tags/functions/2/func.json`:
+```json
+{
+    "replace": false,
+    "values": [
+        "pack:2/3/4/func"
+    ]
+}
+```
+
+## Phi version 0
+Phi version 0 was written before Lantern Load was conceived, and as such does not follow the versioning standards. Version 0 is deprecated, and new features will not be added to it, however critical bug fixes will be back-ported if applicable. There is also no way to check how recent the loaded version of Phi version 0 actually is
+
+It is highly discouraged to depend on version 0, however if you wish to you still can, but checking for version 0.0.0 will not work as the fakeplayer will not exist in that case. To check for version 0 you need to instead do:
+```
+execute unless score $phi.core.version.major phiversion matches 1..
+```
