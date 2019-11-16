@@ -32,8 +32,7 @@ This file defines the metadata for the module.
                 "glob"
             ],
             "outputs": {
-                "output name": "folder name", // "output name" is variable
-                "output name": {
+                "output name": { // "output name" is variable
                     "folder": "folder name",
                     "dependencies": [
                         // See "dependencies" in the root
@@ -43,9 +42,15 @@ This file defines the metadata for the module.
                     ],
                     "preprocessors": [
                         // Recursive structure
+                    ],
+                    "profiles": [
+                        "profile name"
                     ]
                 }
-            }
+            },
+            "profiles": [
+                "profile name"
+            ]
         },
         {
             "type": "nuget",
@@ -60,8 +65,25 @@ This file defines the metadata for the module.
         {
             "type": "custom",
             "name": "human readable name",
-            "url": "url to preprocessor" // URL can point anywhere
+            "url": "url to preprocessor", // URL can point anywhere
+            "profiles": [
+                "profile name"
+            ]
+        },
+        {
+            "type": "split",
+            "preprocessors": {
+                "split name": { // "split name" is dynamic
+                    // Recursive structure
+                }
+            },
+            "profiles": [
+                "profile name"
+            ]
         }
+    ],
+    "profiles": [
+        "profile name"
     ],
     "dependencies": [
         {
@@ -113,16 +135,34 @@ There are 4 different types of pre-proccessors:
   This is designed for use during the development of a new pre-processor, and is not expected to be used in a release of any module.
 - `"type": "custom"`  
   A custom pre-processor cannot be run by the Phi module packer and must be run manually by the user.  
+  
   This exists for compatibility with existing tools that do not yet have a pre-processor available. If a module requires a custom pre-processor it will be shown on the website using the given name and will direct people to the specified URL. The URL can point anywhere, however it is recommended to point to the documenation of how to install and run the pre-processor
+- `"type": "split"`  
+  This allows for multiple independent preprocessor trees to be run. Each preprocessor tree gets the same inputs and produces outputs into folders matching the `"split name"` for that tree.  
+
+  Examples of possible use cases:
+  - Perform debugging without disrupting the flow of data
+  - Only generating documentation when requested rather than on all builds
+  - Automatically copying the final output to a world during development but not on final release
 
 The preprocessors are run in order from top the bottom, and the outputs are put into folders inside the `dist` folder named according to `"outputs"`  
 If `"outputs"` is not defined the preprocessor defines the default output folder(s). When the `"preprocessors"` list is empty the output goes directly into the `dist` folder. Most preprocessors use this same default for a single output.
 
-If a preprocessor creates multiple outputs the nested `"preprocessors"` list is run on the associated output, and then any preprocessors after this preprocessor will run on each output individually, with the output being nested inside the output folder.
+If a preprocessor creates multiple outputs the nested `"preprocessors"` list is run on the associated output, and then any preprocessors after this preprocessor will run on each output individually, with the output being nested inside the output folder.  
+Independent outputs may be processed in parallel.
 
 An example preprocessor with multiple outputs would be one that outputs a version of the pack using only vanilla features, and a version that takes advantage of mod commands to improve performance or add new functionality.
 
 The `"inputs"` lists specifies a list of files that the pre-processor should process, formatted as a *nix file glob relative to the root of the output of the previous pre-processor. This list is optional and the default is pre-processor defined. Any files that the pre-processor doesn't take as input will be just directly copied to the output with no processing, prior to any other files being processed so that the output of the pre-processor can replace such files without its own output being corrupted.
+
+The `"profiles"` list specifies which profiles this preprocessor or output will run during. If the list is empty or missing then the it will run for all profiles, otherwise if the running profile is not in the `"profiles"` list, the pre-processor, all its children, and any pre-processors following it in the list, will not run.  
+It is an error to specify a profile that is not listed in the global `"profiles"` list
+
+## Standard Profiles
+Profiles may have any name, but there are some profile names that are commonly used and are recommended:
+- `dev` for development
+- `release` for producing the final distribution
+- `doc` for documentation
 
 ## Dependencies
 The `"dependencies"` list specifies the required dependencies of the module.
