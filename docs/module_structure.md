@@ -32,8 +32,7 @@ This file defines the metadata for the module.
                 "glob"
             ],
             "outputs": {
-                "output name": "folder name", // "output name" is variable
-                "output name": {
+                "output name": { // "output name" is variable
                     "folder": "folder name",
                     "dependencies": [
                         // See "dependencies" in the root
@@ -73,12 +72,14 @@ This file defines the metadata for the module.
         },
         {
             "type": "split",
-            "split name": { // "split name" is variable
-                // Preprocessor
+            "preprocessors": {
+                "split name": { // "split name" is dynamic
+                    // Recursive structure
+                }
             },
-            "split name": {
-                // Preprocessor
-            }
+            "profiles": [
+                "profile name"
+            ]
         }
     ],
     "profiles": [
