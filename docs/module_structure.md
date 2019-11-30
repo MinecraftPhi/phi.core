@@ -60,7 +60,7 @@ This file defines the metadata for the module.
         {
             "type": "local",
             "folder": "file location",
-            // ... same keys as a verified preprocessor, without version
+            // ... same keys as a verified preprocessor
         },
         {
             "type": "custom",
